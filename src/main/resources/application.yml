@@ -45,6 +45,7 @@ application:
   deletePurchanseTax: 0.1
   maxDeleteTime: 12
   maxUpdateTime: 5
+  minimumPurchanse: 70000
 
 
 

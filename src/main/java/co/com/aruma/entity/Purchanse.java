@@ -3,6 +3,8 @@ package co.com.aruma.entity;
 import java.util.Date;
 import java.util.HashMap;
 
+import javax.validation.constraints.NotBlank;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -35,6 +37,11 @@ public class Purchanse {
 	@Field("productsPurchansed") private HashMap<String, Integer> productsPurchansed;
 	@Field("purchanseDate") private Date purchanseDate;
 	@Field("active") private boolean active;
+	@Field("clientDocumentId") private String clientDocumentId;
+	@Field("deliveryAddress") private String deliveryAddress;
+	@Field("clientCellphone") private String clientCellphone;
+	@Field("clientEmail") private String clientEmail;
+
 
     
 }

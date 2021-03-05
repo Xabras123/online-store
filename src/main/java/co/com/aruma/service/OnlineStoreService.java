@@ -15,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.com.aruma.dto.BillDTO;
+import co.com.aruma.dto.ClientDTO;
 import co.com.aruma.dto.ProductDTO;
 import co.com.aruma.dto.ProductDTOOut;
 import co.com.aruma.dto.PurchanseDTO;
@@ -33,8 +35,9 @@ import reactor.core.publisher.Mono;
 public class OnlineStoreService {
 	
 	private static final String PURCHANSE_NOT_FOUND = "Purchanse not found";
-	@Value("${application.maxUpdateTime}") int maxUpdateTime = 5;
-	@Value("${application.maxDeleteTime}") int maxDeleteTime = 12;
+	@Value("${application.maxUpdateTime}") int maxUpdateTime;
+	@Value("${application.maxDeleteTime}") int maxDeleteTime;
+	@Value("${application.minimumPurchanse}") int minimumPurchanse;
 	
 	
 	@Value("${application.ivaValue}") float ivaValue;
@@ -75,6 +78,11 @@ public class OnlineStoreService {
 						float productsCosts = calculateProductCosts(purchanseDTO.getProductsId(), products);
 						float deliveryCosts = calculateDeliveryCosts(productsCosts, purchanseDTO.getClientDTO().getDeliveryAddress());
 						float taxCosts = calculateTaxCosts(productsCosts, ivaValue);
+						
+						if(productsCosts < minimumPurchanse) {
+							Response res = Response.builder().status(false).message("Minimum purchanse has to be above $" + minimumPurchanse).build();
+							return Mono.just(res);
+						}
 
 						ArrayList<Product> updatedProducts = (ArrayList<Product>) updateProducts(products, purchanseDTO.getProductsId());
 						
@@ -90,7 +98,7 @@ public class OnlineStoreService {
 					    		    				return  Mono.just(Response.builder()
 					    		                    		.status(true)
 					    		                    		.message("OK")
-					    		                    		.data(savedPurchanse)
+					    		                    		.data(mapEnityToBill(savedPurchanse))
 					    		                            .build());
 								    		    		
 								    	});
@@ -191,7 +199,7 @@ public class OnlineStoreService {
 	        					    		    				return  Mono.just(Response.builder()
 	        					    		                    		.status(true)
 	        					    		                    		.message("OK")
-	        					    		                    		.data(updatedPurchanse)
+	        					    		                    		.data(mapEnityToBill(updatedPurchanse))
 	        					    		                            .build());
 	        								    		    		
 	        								    	});
@@ -251,7 +259,7 @@ public class OnlineStoreService {
 	        									        		float billPurchanseDeleteTax = 0;
 	        									        		Date currentDate = new Date();
 	        									        	 
-	        										            if(calculateHourDiference(currentDate, purchanse.getPurchanseDate()) <= maxDeleteTime) {
+	        										            if(calculateHourDiference(currentDate, purchanse.getPurchanseDate()) > maxDeleteTime) {
 	        										            	billPurchanseDeleteTaxBand = true;
 	        										            	billPurchanseDeleteTax = purchanse.getProductsCosts() * deletePurchanseTax;
 	        										            }
@@ -262,7 +270,7 @@ public class OnlineStoreService {
 	        					    		    				return  Mono.just(Response.builder()
 	        					    		                    		.status(true)
 	        					    		                    		.message("Ok, Your $" + refoundedAmount + " has been refounded and the refound tax is $" +  billPurchanseDeleteTax)
-	        					    		                    		.data(deletedPurchanse)
+	        					    		                    		.data(mapEnityToBill(deletedPurchanse))
 	        					    		                            .build());
 	        								    		    		
 	        								    	});
@@ -292,6 +300,7 @@ public class OnlineStoreService {
 				});	
 	}
 	
+
 	
 	public Mono<Response> dataInitializer(int amountOfProducts){
 		
@@ -355,6 +364,29 @@ public class OnlineStoreService {
 
 				});		
 	}
+	
+	
+	private BillDTO mapEnityToBill(Purchanse purchanse) {
+		
+		return BillDTO.builder()
+				.id(purchanse.getId().toString())
+				.payingMethod(purchanse.getPayingMethod())
+				.productsCosts(purchanse.getProductsCosts())
+				.deliveryCosts(purchanse.getDeliveryCosts())
+				.taxCosts(purchanse.getTaxCosts())
+				.productsPurchansed(purchanse.getProductsPurchansed())
+				.purchanseDate(purchanse.getPurchanseDate())
+				.clientInfo(ClientDTO.builder()
+						.documentId(purchanse.getClientDocumentId())
+						.deliveryAddress(purchanse.getDeliveryAddress())
+						.cellphone(purchanse.getClientCellphone())
+						.email(purchanse.getClientEmail())
+						.build())
+				.build();
+	}
+	
+	
+
 	
 	private ArrayList<ProductDTOOut> mapEntitiToDTO(List<Product> savedProducts) {
 		
@@ -462,6 +494,10 @@ public class OnlineStoreService {
 				.purchanseDate(new Date())
 				.active(true)
 				.productsPurchansed(purchanseDTO.getProductsId())
+				.clientDocumentId(purchanseDTO.getClientDTO().getDocumentId())
+				.deliveryAddress(purchanseDTO.getClientDTO().getDeliveryAddress())
+				.clientCellphone(purchanseDTO.getClientDTO().getCellphone())
+				.clientEmail(purchanseDTO.getClientDTO().getEmail())
 				.build();
 	}
 	
@@ -563,8 +599,6 @@ public class OnlineStoreService {
 		
 		return productsMap;
 	}
-
-
 
 	//El pingolin
 	public Mono<Response> ping( HttpHeaders hh) {
