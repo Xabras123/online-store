@@ -376,6 +376,7 @@ public class OnlineStoreService {
 				.taxCosts(purchanse.getTaxCosts())
 				.productsPurchansed(purchanse.getProductsPurchansed())
 				.purchanseDate(purchanse.getPurchanseDate())
+				.totalCost(purchanse.getProductsCosts() + purchanse.getDeliveryCosts() + purchanse.getTaxCosts())
 				.clientInfo(ClientDTO.builder()
 						.documentId(purchanse.getClientDocumentId())
 						.deliveryAddress(purchanse.getDeliveryAddress())
