@@ -26,8 +26,8 @@ public class BillDTO {
 	private String payingMethod;
 	private float productsCosts;
 	private float deliveryCosts;
-	private float totalCost;
 	private float taxCosts;
+	private float totalCost;
 	private HashMap<String, Integer> productsPurchansed;
 	private Date purchanseDate;
 	private ClientDTO clientInfo;

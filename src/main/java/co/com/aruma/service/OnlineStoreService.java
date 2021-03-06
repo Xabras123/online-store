@@ -58,7 +58,11 @@ public class OnlineStoreService {
 	//@Autowired
 	//EncryptAndDecrypt encryptAndDecrypt;
 	
-	public Mono<Response> purchanseProduct(@Valid PurchanseDTO purchanseDTO) {
+	public Mono<Response> purchanseProduct(HttpHeaders hh, @Valid PurchanseDTO purchanseDTO) {
+		
+		LogTransaction log = new LogTransaction(hh);
+        log.startTransaction("Purchanse Product", purchanseDTO);
+    	
 		
 		purchanseDTO.setProductsId(generateHashMap(purchanseDTO.getProductsToBuy()));
 
@@ -70,6 +74,8 @@ public class OnlineStoreService {
 					if(products.size() < purchanseDTO.getProductsId().size()) {
 						
 						Response res = Response.builder().status(false).message("some products on the list doesnt exist!" ).build();
+	    				log.endTransaction(res);	
+
 						return Mono.just(res);
 					}
 					
@@ -81,6 +87,8 @@ public class OnlineStoreService {
 						
 						if(productsCosts < minimumPurchanse) {
 							Response res = Response.builder().status(false).message("Minimum purchanse has to be above $" + minimumPurchanse).build();
+		    				log.endTransaction(res);	
+
 							return Mono.just(res);
 						}
 
@@ -93,13 +101,14 @@ public class OnlineStoreService {
 										return this.purchanseRepository.save(mapPurchanseDTOToEntity(purchanseDTO, deliveryCosts, taxCosts, productsCosts))
 								    			.flatMap(savedPurchanse ->{
 								    				
-				
-								    		    				
-					    		    				return  Mono.just(Response.builder()
+								    				Response res = Response.builder()
 					    		                    		.status(true)
 					    		                    		.message("OK")
 					    		                    		.data(mapEnityToBill(savedPurchanse))
-					    		                            .build());
+					    		                            .build();
+								    				log.endTransaction(res);	
+					    		    				return  Mono.just(res);
+					    		    				
 								    		    		
 								    	});
 										
@@ -107,6 +116,7 @@ public class OnlineStoreService {
 
 									e.printStackTrace();
 									Response res = Response.builder().status(false).message("BAD_REQUEST " + e.getMessage()).build();
+									log.endTransaction(res);
 									return Mono.just(res);
 
 								});
@@ -114,6 +124,7 @@ public class OnlineStoreService {
 					}else {
 						
 						Response res = Response.builder().status(false).message("There isnt enough products to satify order" ).build();
+						log.endTransaction(res);
 						return Mono.just(res);
 						
 					}
@@ -124,6 +135,7 @@ public class OnlineStoreService {
 
 					e.printStackTrace();
 					Response res = Response.builder().status(false).message("Error ocured: " + e.getMessage()).build();
+					log.endTransaction(res);
 					return Mono.just(res);
 					
 					
@@ -137,8 +149,11 @@ public class OnlineStoreService {
 
 
 
-	public Mono<Response> editPurchanse(String purchanseId, @Valid ArrayList<ProductDTO> purchanseDTO) {
+	public Mono<Response> editPurchanse(HttpHeaders hh, String purchanseId, @Valid ArrayList<ProductDTO> purchanseDTO) {
 		
+		
+		LogTransaction log = new LogTransaction(hh);
+        log.startTransaction("Edit Purchanse", purchanseId + " " +  purchanseDTO.toString());
 		HashMap<String, Integer> productsToEditHash  = generateHashMap(purchanseDTO);
 		
 		return this.purchanseRepository.findByIdAndActive(purchanseId, true).switchIfEmpty(Mono.error(new Exception(PURCHANSE_NOT_FOUND))).
@@ -149,6 +164,7 @@ public class OnlineStoreService {
 			            if(calculateHourDiference(currentDate, purchanse.getPurchanseDate()) > maxUpdateTime) {
 			            	
 							Response res =Response.builder().status(false).message("Maximum time to edit a product list is " + maxUpdateTime + " hours").build();
+							log.endTransaction(res);
 							return Mono.just(res);
 			            }
 		            	
@@ -161,12 +177,14 @@ public class OnlineStoreService {
 		        					if(products.size() < productsToEditHash.size()) {
 		        						
 		        						Response res = Response.builder().status(false).message("some products on the list doesnt exist!" ).build();
+		        						log.endTransaction(res);
 		        						return Mono.just(res);
 		        					}
 		        					
 		        					if(!veryfyAmountPurchanse2(purchanse.getProductsPurchansed(), productsToEditHash, products)) {
 		        						
 		        						Response res = Response.builder().status(false).message("There isnt enough products to satify order" ).build();
+		        						log.endTransaction(res);
 		        						return Mono.just(res);
 		        					}
 		        					
@@ -176,6 +194,8 @@ public class OnlineStoreService {
 	        						
 	        						if(productsCosts < purchanse.getProductsCosts()) {
 		        						Response res = Response.builder().status(false).message("new products list Must have atleast the same value as the previous one" ).build();
+								    	log.endTransaction(res);
+
 		        						return Mono.just(res);
 	        						}
 		        					
@@ -194,20 +214,25 @@ public class OnlineStoreService {
 	        										return this.purchanseRepository.save(purchanse)
 	        								    			.flatMap(updatedPurchanse ->{
 	        								    				
-	        				
-	        								    		    				
-	        					    		    				return  Mono.just(Response.builder()
+	        								    				Response res = Response.builder()
 	        					    		                    		.status(true)
 	        					    		                    		.message("OK")
 	        					    		                    		.data(mapEnityToBill(updatedPurchanse))
-	        					    		                            .build());
+	        					    		                            .build();
+	        				
+	        											    	log.endTransaction(res);
+
+	        					    		    				return  Mono.just(res);
 	        								    		    		
 	        								    	});
 	        										
 	        								}).onErrorResume(e -> {
 
 	        									e.printStackTrace();
+
 	        									Response res = Response.builder().status(false).message("BAD_REQUEST " + e.getMessage()).build();
+										    	log.endTransaction(res);
+
 	        									return Mono.just(res);
 
 	        								});
@@ -215,7 +240,10 @@ public class OnlineStoreService {
 		        				}).onErrorResume(e -> {
 
 		        					e.printStackTrace();
+
 		        					Response res = Response.builder().status(false).message("Error ocured: " + e.getMessage()).build();
+							    	log.endTransaction(res);
+
 		        					return Mono.just(res);
 		        					
 		        					
@@ -225,13 +253,17 @@ public class OnlineStoreService {
 
 		        }).onErrorResume(e -> {
 					Response res =Response.builder().status(false).message(e.getMessage()).build();
+			    	log.endTransaction(res);
+
 					return Mono.just(res);
 				});	
 	}
 	
 	
-	public Mono<Response> deletePurchanse(String purchanseId) {
+	public Mono<Response> deletePurchanse(HttpHeaders hh, String purchanseId) {
 		
+		LogTransaction log = new LogTransaction(hh);
+        log.startTransaction("Delete Purchanse", purchanseId);
 		
 		return this.purchanseRepository.findByIdAndActive(purchanseId, true).switchIfEmpty(Mono.error(new Exception(PURCHANSE_NOT_FOUND))).
 		        flatMap(purchanse -> {
@@ -267,11 +299,15 @@ public class OnlineStoreService {
 	        								    				
 	        								    				
 	        								    				float refoundedAmount = purchanse.getProductsCosts() + purchanse.getTaxCosts() + purchanse.getDeliveryCosts() - billPurchanseDeleteTax;
-	        					    		    				return  Mono.just(Response.builder()
+	        								    				
+	        								    				Response res = Response.builder()
 	        					    		                    		.status(true)
 	        					    		                    		.message("Ok, Your $" + refoundedAmount + " has been refounded and the refound tax is $" +  billPurchanseDeleteTax)
 	        					    		                    		.data(mapEnityToBill(deletedPurchanse))
-	        					    		                            .build());
+	        					    		                            .build();
+	        											    	log.endTransaction(res);
+
+	        					    		    				return  Mono.just(res);
 	        								    		    		
 	        								    	});
 	        										
@@ -279,6 +315,8 @@ public class OnlineStoreService {
 
 	        									e.printStackTrace();
 	        									Response res = Response.builder().status(false).message("BAD_REQUEST " + e.getMessage()).build();
+										    	log.endTransaction(res);
+
 	        									return Mono.just(res);
 
 	        								});
@@ -286,7 +324,9 @@ public class OnlineStoreService {
 		        				}).onErrorResume(e -> {
 
 		        					e.printStackTrace();
-		        					Response res = Response.builder().status(false).message("Error ocured: " + e.getMessage()).build();
+		        					Response res = Response.builder().status(false).message("Error occured: " + e.getMessage()).build();
+							    	log.endTransaction(res);
+
 		        					return Mono.just(res);
 		        					
 		        					
@@ -296,13 +336,18 @@ public class OnlineStoreService {
 
 		        }).onErrorResume(e -> {
 					Response res =Response.builder().status(false).message(e.getMessage()).build();
+			    	log.endTransaction(res);
+
 					return Mono.just(res);
 				});	
 	}
 	
 
 	
-	public Mono<Response> dataInitializer(int amountOfProducts){
+	public Mono<Response> dataInitializer(HttpHeaders hh, int amountOfProducts){
+		
+		LogTransaction log = new LogTransaction(hh);
+        log.startTransaction("Data Initializer", amountOfProducts);
 		
 		String[] productName = new String[]{"Balon de futbol", "vajlla", "Tenis Nike", "PlayStation", "Juego Sabanas", "Silla", "Maleta Viaje", "Lapiz"};
 		String[] productColor = new String[]{"Lila", "Azul", "Verde", "Rojo", "Rosado", "Fucsia", "Negro", "Blanco"};
@@ -352,12 +397,16 @@ public class OnlineStoreService {
 				.flatMap(savedProducts -> {
 					
 					Response res = Response.builder().status(true).message("Ok").data(mapEntitiToDTO(savedProducts)).build();
+			    	log.endTransaction(res);
+
 					return Mono.just(res);
 					
 				}).onErrorResume(e -> {
 
 					e.printStackTrace();
 					Response res = Response.builder().status(false).message("Error ocured: " + e.getMessage()).build();
+			    	log.endTransaction(res);
+
 					return Mono.just(res);
 					
 					

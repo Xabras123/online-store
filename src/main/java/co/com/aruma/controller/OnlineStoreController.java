@@ -30,22 +30,22 @@ public class OnlineStoreController {
 	OnlineStoreService onlineStoreervice;
 	
 	@PostMapping("/purchanse-product")
-	public Mono<Response> purchanseProduct(@Valid @RequestBody PurchanseDTO purchanseDTO){
+	public Mono<Response> purchanseProduct(@Valid @RequestBody PurchanseDTO purchanseDTO, ServerWebExchange exchange){
 		
-		return this.onlineStoreervice.purchanseProduct(purchanseDTO);
+		return this.onlineStoreervice.purchanseProduct(exchange.getRequest().getHeaders(), purchanseDTO);
 	}
 	
 	
 	@PostMapping("/edit-purchanse/{purchanse-id}")
-	public Mono<Response> editPurchanse(@Valid @RequestBody ArrayList<ProductDTO> purchanseDTO, @PathVariable("purchanse-id") String purchanseId){
+	public Mono<Response> editPurchanse(@Valid @RequestBody ArrayList<ProductDTO> purchanseDTO, @PathVariable("purchanse-id") String purchanseId, ServerWebExchange exchange){
 		
-		return this.onlineStoreervice.editPurchanse(purchanseId, purchanseDTO);
+		return this.onlineStoreervice.editPurchanse(exchange.getRequest().getHeaders() ,purchanseId, purchanseDTO);
 	}
 	
 	@DeleteMapping("/delete-purchanse/{purchanse-id}")
-	public Mono<Response> deletePurchanse(@PathVariable("purchanse-id") String purchanseId){
+	public Mono<Response> deletePurchanse(@PathVariable("purchanse-id") String purchanseId, ServerWebExchange exchange){
 		
-		return this.onlineStoreervice.deletePurchanse(purchanseId);
+		return this.onlineStoreervice.deletePurchanse(exchange.getRequest().getHeaders(), purchanseId);
 	}
 	
     @GetMapping("/ping")
@@ -54,9 +54,9 @@ public class OnlineStoreController {
     }
 	
 	@PostMapping("/initialize-data/{amount}")
-	public Mono<Response> initializeData(@PathVariable("amount") int amount){
+	public Mono<Response> initializeData(@PathVariable("amount") int amount, ServerWebExchange exchange){
 		
-		return this.onlineStoreervice.dataInitializer(amount);
+		return this.onlineStoreervice.dataInitializer(exchange.getRequest().getHeaders(), amount);
 	}
 	
 
