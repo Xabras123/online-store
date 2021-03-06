@@ -1,0 +1,155 @@
+{
+	"info": {
+		"_postman_id": "065dee12-20ff-4efe-935c-a01e68c3f532",
+		"name": "online-store",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ping",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"productsIds\": [\n       {\n        \"key\": \"123\",\n        \"value\" : 8\n       }\n    ],\n\n    \"payingMethod\": \"credit-card\",\n\n    \"documentId\" : \"123123\",\n    \"deliveryAddress\": \"Calle 123 #456a\",\n    \"cellphone\": \"129319239\",\n    \"email\" : \"aaa@hotmail.com\" \n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8083/online-store/ping",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"online-store",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "purchanse",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"productsToBuy\": [\n       {\n        \"productId\": \"60425d91d57fc13688ec2d74\",\n        \"amount\" : 2\n       },\n        {\n        \"productId\": \"60425d91d57fc13688ec2d6c\",\n        \"amount\" : 3\n       },\n        {\n        \"productId\": \"60425d91d57fc13688ec2d6c\",\n        \"amount\" : 1\n       }\n\n    ],\n    \"payingMethod\": \"credit-card\",\n    \"clientDTO\" :{\n        \"documentId\" : \"123123\",\n        \"deliveryAddress\": \"Calle 123 #456a\",\n        \"cellphone\": \"129319239\",\n        \"email\" : \"aaa@hotmail.com\" \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8083/online-store/purchanse-product",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"online-store",
+						"purchanse-product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "datainitializer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8083/online-store/initialize-data/10",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"online-store",
+						"initialize-data",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deletePurchanse",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8083/online-store/delete-purchanse/6042adc481746971dad849c8",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"online-store",
+						"delete-purchanse",
+						"6042adc481746971dad849c8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EditPurchanse",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    \n       {\n            \"productId\": \"60425d91d57fc13688ec2d6b\",\n            \"amount\" : 10\n       },\n        {\n            \"productId\": \"60425d91d57fc13688ec2d6c\",\n            \"amount\" : 1\n       },\n        {\n            \"productId\": \"60425d91d57fc13688ec2d6e\",\n            \"amount\" : 2     \n        }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8083/online-store/edit-purchanse/6042e46f343d2f7ecbfa00ba",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"online-store",
+						"edit-purchanse",
+						"6042e46f343d2f7ecbfa00ba"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
